@@ -1,0 +1,18 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/stage1",
+      "destination": "/stage1/index.html"
+    },
+    {
+      "source": "/stage2",
+      "destination": "/stage2/index.html"
+    },
+    {
+      "source": "/stage3",
+      "destination": "/stage3/index.html"
+    }
+  ]
+}
