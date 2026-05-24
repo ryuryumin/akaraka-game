@@ -59,6 +59,9 @@ const ASSETS = {
     chantNote: asset("./assets/stage3/chant-note.png"),
     music: asset("./assets/stage3/wonsirim.mp3"),
   },
+  audio: {
+    menuBgm: asset("./assets/audio/festival-pixel-bgm.wav"),
+  },
   stage1: {
     choice: [
       asset("./assets/stage1/choice-1.png"),
@@ -167,12 +170,12 @@ const stage2Rules = {
   difficultyStartMs: 30000,
   difficultyStepMs: 10000,
   baseSpawnMs: 1300,
-  spawnStepMs: 170,
-  minSpawnMs: 460,
+  spawnStepMs: 230,
+  minSpawnMs: 360,
   baseFallSpeed: 290,
-  fallSpeedStep: 72,
-  easySunsPerWater: 5,
-  hardSunsPerWater: 9,
+  fallSpeedStep: 105,
+  easySunsPerWater: 3,
+  hardSunsPerWater: 5,
   waterHeal: 10,
   sunDamage: 5,
   fallStartY: 214,
@@ -219,40 +222,47 @@ const stage3LyricCaptions = [
   { startMs: 69000, endMs: 85000, text: "소리치며 다시 한 번 힘을 내서 뛰어라" },
 ];
 
-const stage3ChartSections = [
-  { startMs: 2200, endMs: 15000, intervalMs: 1000, pattern: ["clap", "chant", "clap", "clap"] },
-  { startMs: 16000, endMs: 22000, intervalMs: 650, pattern: ["chant", "clap", "clap", "chant", "clap"] },
-  { startMs: 22000, endMs: 29000, intervalMs: 560, pattern: ["clap", "clap", "chant", "clap", "chant", "clap"] },
-  { startMs: 29000, endMs: 35000, intervalMs: 620, pattern: ["chant", "clap", "chant", "clap", "clap"] },
-  { startMs: 35000, endMs: 41000, intervalMs: 620, pattern: ["clap", "chant", "clap", "chant", "clap"] },
-  { startMs: 41000, endMs: 55000, intervalMs: 520, pattern: ["both", "clap", "chant", "clap", "chant", "both", "clap"] },
-  { startMs: 55000, endMs: 62000, intervalMs: 430, pattern: ["clap", "clap", "chant", "clap", "clap", "clap", "chant", "clap"] },
-  { startMs: 62000, endMs: 69000, intervalMs: 430, pattern: ["clap", "clap", "chant", "clap", "clap", "clap", "chant", "clap"] },
-  { startMs: 69000, endMs: 85000, intervalMs: 460, pattern: ["chant", "clap", "chant", "clap", "both", "clap", "chant", "clap"] },
-  { startMs: 85000, endMs: 89500, intervalMs: 680, pattern: ["both", "clap", "chant"] },
+function stage3Phrase(startMs, offsets, pattern) {
+  return offsets.map((offset, index) => ({
+    timeMs: startMs + offset,
+    lane: pattern[index % pattern.length],
+  }));
+}
+
+function stage3Grid(startMs, count, stepMs, pattern) {
+  return Array.from({ length: count }, (_, index) => ({
+    timeMs: startMs + index * stepMs,
+    lane: pattern[index % pattern.length],
+  }));
+}
+
+const stage3ChartNotes = [
+  ...stage3Grid(2600, 13, 1000, ["clap", "chant", "clap", "clap"]),
+  ...stage3Phrase(15280, [0, 720], ["both", "chant"]),
+  ...stage3Phrase(16000, [0, 760, 1500, 2240, 3000, 3760, 4520, 5280], ["chant", "clap", "clap", "chant", "clap", "clap", "chant", "clap"]),
+  ...stage3Phrase(22000, [0, 700, 1400, 2120, 2840, 3560, 4280, 5000, 5720, 6440], ["clap", "clap", "chant", "clap", "chant", "clap", "clap", "chant", "clap", "clap"]),
+  ...stage3Phrase(29000, [0, 760, 1520, 2280, 3040, 3800, 4560, 5320], ["chant", "clap", "chant", "clap", "clap", "chant", "clap", "clap"]),
+  ...stage3Phrase(35000, [0, 740, 1480, 2220, 2960, 3700, 4440, 5180], ["clap", "chant", "clap", "chant", "clap", "clap", "chant", "clap"]),
+  ...stage3Phrase(41000, [0, 720, 1440, 2160, 2880, 3600, 4320, 5040, 5760, 6480, 7200, 7920, 8640, 9360, 10080, 10800, 11520, 12240, 12960], ["both", "clap", "chant", "clap", "chant", "clap", "clap", "chant"]),
+  ...stage3Phrase(55000, [0, 500, 1000, 1500, 2050, 2500, 2950, 3400, 3850, 4300, 4750, 5200, 5650, 6100], ["clap", "chant", "clap", "both", "chant", "clap", "clap", "clap", "chant", "clap", "clap", "clap", "both", "clap"]),
+  ...stage3Phrase(62000, [0, 500, 1000, 1500, 2050, 2500, 2950, 3400, 3850, 4300, 4750, 5200, 5650, 6100], ["clap", "chant", "clap", "both", "chant", "clap", "clap", "clap", "chant", "clap", "clap", "clap", "both", "clap"]),
+  ...stage3Grid(69000, 16, 500, ["chant", "clap", "chant", "clap", "both", "clap", "chant", "clap"]),
+  ...stage3Grid(77000, 18, 430, ["chant", "clap", "both", "clap", "chant", "clap"]),
+  ...stage3Phrase(85000, [0, 520, 1040, 1560, 2080, 2600, 3120, 3640, 4160], ["both", "clap", "chant", "clap", "both", "clap", "chant", "clap", "both"]),
 ];
 
 function createStage3Beatmap() {
-  const notes = [];
-
-  stage3ChartSections.forEach((section) => {
-    let patternIndex = 0;
-
-    for (let timeMs = section.startMs; timeMs <= section.endMs; timeMs += section.intervalMs) {
-      const lane = section.pattern[patternIndex % section.pattern.length];
-
+  return stage3ChartNotes
+    .flatMap(({ timeMs, lane }) => {
       if (lane === "both") {
-        notes.push({ timeMs, lane: "clap" });
-        notes.push({ timeMs: timeMs + 90, lane: "chant" });
-      } else {
-        notes.push({ timeMs, lane });
+        return [
+          { timeMs, lane: "clap" },
+          { timeMs: timeMs + 84, lane: "chant" },
+        ];
       }
 
-      patternIndex += 1;
-    }
-  });
-
-  return notes
+      return [{ timeMs, lane }];
+    })
     .filter((note) => note.timeMs < stage3Rules.durationMs)
     .sort((a, b) => a.timeMs - b.timeMs);
 }
@@ -500,7 +510,17 @@ const stage3Elements = {
 const stage3Audio = typeof Audio === "undefined" ? null : new Audio(ASSETS.stage3.music);
 if (stage3Audio) {
   stage3Audio.preload = "auto";
+  stage3Audio.volume = 0.34;
 }
+
+const menuBgmAudio = typeof Audio === "undefined" ? null : new Audio(ASSETS.audio.menuBgm);
+if (menuBgmAudio) {
+  menuBgmAudio.loop = true;
+  menuBgmAudio.preload = "auto";
+  menuBgmAudio.volume = 0.14;
+}
+
+let audioGestureReady = false;
 
 const hitboxes = {
   home: [
@@ -874,6 +894,12 @@ function getStage2PlayerRect() {
   };
 }
 
+function getStage2TiredFacingScale() {
+  const directionScale = gameState.stage2.facingDirection < 0 ? -1 : 1;
+  const characterScale = gameState.selectedCharacter === "yeonwoo" ? -1 : 1;
+  return directionScale * characterScale;
+}
+
 function createStage2MoveButton(label, rect, side) {
   const button = document.createElement("button");
   button.type = "button";
@@ -910,7 +936,7 @@ function renderStage3() {
   layer.append(notesLayer, effectsLayer);
 
   stage3Elements.time = makeDiv("stage3-time-value", "", { x: 72, y: 106, w: 112, h: 70 });
-  stage3Elements.score = makeDiv("stage3-score-value", "", { x: 694, y: 112, w: 152, h: 68 });
+  stage3Elements.score = makeDiv("stage3-score-value", "", { x: 670, y: 122, w: 154, h: 58 });
   stage3Elements.caption = makeDiv("stage3-caption", "", { x: 252, y: 274, w: 438, h: 118 });
   stage3Elements.combo = makeDiv("stage3-combo", "", { x: 596, y: 476, w: 258, h: 132 });
   stage3Elements.feedback = makeDiv("stage3-feedback", "", { x: 120, y: 452, w: 268, h: 150 });
@@ -1377,7 +1403,7 @@ function renderMemory(layer) {
   const quizIndex = gameState.stage1.memoryRound;
   const quiz = memoryQuizzes[quizIndex];
 
-  renderConversationProgress(layer, 4);
+  renderMemoryProgress(layer, quizIndex + 1);
 
   if (gameState.selectedCharacter === "yeonhee") {
     layer.append(makeDiv("stage1-memory-prompt", "방금 대화 내용을\n기억하고 있나요?", { x: 145, y: 306, w: 650, h: 92 }));
@@ -1392,6 +1418,35 @@ function renderMemory(layer) {
     "memory",
     handleMemoryChoice,
   );
+}
+
+function renderMemoryProgress(layer, currentRound) {
+  const stepSize = 74;
+  const stepY = 190;
+  const lineY = 223;
+  const iconRects = [300, 434, 568].map((x) => ({ x, y: stepY, w: stepSize, h: stepSize }));
+  const lineRects = [
+    { x: 374, y: lineY, w: 60, h: 10 },
+    { x: 508, y: lineY, w: 60, h: 10 },
+  ];
+
+  lineRects.forEach((rect, index) => {
+    const line = makeDiv(`stage1-progress-line ${index < currentRound - 1 ? "is-active" : ""}`, "", rect);
+    layer.append(line);
+  });
+
+  iconRects.forEach((rect, index) => {
+    const stepNumber = index + 1;
+    const active = stepNumber <= currentRound;
+    const current = stepNumber === currentRound;
+    layer.append(
+      makeDiv(
+        `stage1-progress-step ${active ? "is-active" : "is-inactive"} ${current ? "is-current" : ""}`,
+        String(stepNumber),
+        rect,
+      ),
+    );
+  });
 }
 
 function renderChoices(layer, choices, type, onSelect) {
@@ -1552,8 +1607,10 @@ function startStage3Audio() {
 
   if (!stage3Audio) return;
 
+  stopMenuBgm();
   stage3Audio.pause();
   stage3Audio.currentTime = 0;
+  stage3Audio.volume = 0.34;
   const playPromise = stage3Audio.play();
   stage3.audioStarted = true;
 
@@ -1576,6 +1633,41 @@ function stopStage3Audio(reset = false) {
   if (reset) {
     stage3Audio.currentTime = 0;
   }
+}
+
+function shouldPlayMenuBgm(screen = gameState.screen) {
+  return screen !== "stage3Play";
+}
+
+function startMenuBgm() {
+  if (!menuBgmAudio || !audioGestureReady || !shouldPlayMenuBgm()) return;
+  menuBgmAudio.volume = 0.14;
+  const playPromise = menuBgmAudio.play();
+
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => {
+      // The next user gesture will try again.
+    });
+  }
+}
+
+function stopMenuBgm() {
+  if (!menuBgmAudio) return;
+  menuBgmAudio.pause();
+}
+
+function syncScreenAudio() {
+  if (shouldPlayMenuBgm()) {
+    stopStage3Audio(false);
+    startMenuBgm();
+  } else {
+    stopMenuBgm();
+  }
+}
+
+function markAudioGestureReady() {
+  audioGestureReady = true;
+  syncScreenAudio();
 }
 
 function getStoredNumber(key) {
@@ -1612,6 +1704,7 @@ function goTo(screen) {
   }
 
   render();
+  syncScreenAudio();
 }
 
 function setStage2Input(side, active) {
@@ -1678,7 +1771,7 @@ function getRandomRange(min, max) {
   return min + Math.random() * (max - min);
 }
 
-function spawnStage2Object(forcedType, forcedX) {
+function spawnStage2Object(forcedType, forcedX, options = {}) {
   const stage2 = gameState.stage2;
   if (stage2.isGameOver) return null;
 
@@ -1695,10 +1788,10 @@ function spawnStage2Object(forcedType, forcedX) {
     id: stage2.nextObjectId,
     type,
     x,
-    y: stage2Rules.fallStartY,
+    y: options.y ?? stage2Rules.fallStartY,
     w: spec.w,
     h: spec.h,
-    speed: getStage2FallSpeed() * speedJitter,
+    speed: getStage2FallSpeed() * speedJitter * (options.speedMultiplier ?? 1),
     rotation: getRandomRange(-5, 5),
     rotationSpeed,
   };
@@ -1707,6 +1800,59 @@ function spawnStage2Object(forcedType, forcedX) {
   stage2.fallingObjects.push(object);
   updateStage2ObjectElements();
   return object;
+}
+
+function spawnStage2SunAt(x, index = 0) {
+  return spawnStage2Object("sun", x, {
+    y: stage2Rules.fallStartY - index * 54,
+    speedMultiplier: 1 + index * 0.045,
+  });
+}
+
+function spawnStage2SunPattern() {
+  const stage2 = gameState.stage2;
+  const ramp = getStage2DifficultyRamp();
+  const roll = Math.random();
+  const center = getRandomRange(stage2Rules.fallMinX + 120, stage2Rules.fallMaxX - 120);
+
+  if (stage2.survivalMs < stage2Rules.difficultyStartMs) {
+    spawnStage2Object("sun");
+    return;
+  }
+
+  if (ramp >= 4 && roll < 0.22) {
+    const gapCenter = getRandomRange(stage2Rules.fallMinX + 190, stage2Rules.fallMaxX - 190);
+    [-260, -130, 130, 260].forEach((offset, index) => {
+      spawnStage2SunAt(gapCenter + offset, index);
+    });
+    return;
+  }
+
+  if (ramp >= 2 && roll < 0.52) {
+    [-170, 0, 170].forEach((offset, index) => {
+      spawnStage2SunAt(center + offset, index);
+    });
+    return;
+  }
+
+  if (roll < 0.82) {
+    const spacing = getRandomRange(120, 165);
+    [-spacing, spacing].forEach((offset, index) => {
+      spawnStage2SunAt(center + offset, index);
+    });
+    return;
+  }
+
+  spawnStage2Object("sun");
+}
+
+function spawnStage2Wave() {
+  if (Math.random() < getStage2WaterChance()) {
+    spawnStage2Object("water");
+    return;
+  }
+
+  spawnStage2SunPattern();
 }
 
 function getStage2PlayerHitbox() {
@@ -1792,7 +1938,7 @@ function updateStage2FallingObjects(deltaMs) {
   const spawnInterval = getStage2SpawnInterval();
   while (stage2.spawnElapsed >= spawnInterval) {
     stage2.spawnElapsed -= spawnInterval;
-    spawnStage2Object();
+    spawnStage2Wave();
   }
 
   const playerHitbox = getStage2PlayerHitbox();
@@ -1926,7 +2072,7 @@ function updateStage2PlayerElement() {
     stage2Elements.player.src = frameSrc;
   }
   stage2Elements.player.style.transform = isStage2Tired()
-    ? `scaleX(${gameState.stage2.facingDirection < 0 ? -1 : 1})`
+    ? `scaleX(${getStage2TiredFacingScale()})`
     : "";
   stage2Elements.player.alt = getStage2PlayerLabel();
 }
@@ -2178,6 +2324,9 @@ function updateScale() {
 
 window.addEventListener("resize", updateScale);
 window.addEventListener("orientationchange", updateScale);
+window.addEventListener("pointerdown", markAudioGestureReady, { capture: true });
+window.addEventListener("touchstart", markAudioGestureReady, { capture: true });
+window.addEventListener("keydown", markAudioGestureReady, { capture: true });
 window.addEventListener("keydown", handleStage2KeyDown);
 window.addEventListener("keyup", handleStage2KeyUp);
 
