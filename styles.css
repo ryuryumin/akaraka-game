@@ -17,6 +17,24 @@
 }
 
 html,
+body,
+.game-root,
+.game-frame,
+.game-screen,
+#hotspots,
+button,
+img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+html,
 body {
   width: 100%;
   height: 100%;

@@ -479,6 +479,8 @@ const gameState = {
 const sceneImage = document.querySelector("#sceneImage");
 const hotspots = document.querySelector("#hotspots");
 const gameScreen = document.querySelector("#gameScreen");
+sceneImage.draggable = false;
+sceneImage.setAttribute("draggable", "false");
 const stage2Input = {
   left: false,
   right: false,
@@ -803,6 +805,7 @@ function makeImg(className, src, rect, alt = "") {
   img.src = src;
   img.alt = alt;
   img.draggable = false;
+  img.setAttribute("draggable", "false");
   Object.assign(img.style, {
     left: `${rect.x}px`,
     top: `${rect.y}px`,
@@ -810,6 +813,16 @@ function makeImg(className, src, rect, alt = "") {
     height: `${rect.h}px`,
   });
   return img;
+}
+
+function preventNativeAssetAction(event) {
+  event.preventDefault();
+}
+
+function preventTextSelection(event) {
+  const tagName = event.target?.tagName;
+  if (tagName === "INPUT" || tagName === "TEXTAREA") return;
+  event.preventDefault();
 }
 
 function renderStage2() {
@@ -2324,6 +2337,9 @@ function updateScale() {
 
 window.addEventListener("resize", updateScale);
 window.addEventListener("orientationchange", updateScale);
+window.addEventListener("contextmenu", preventNativeAssetAction, { capture: true });
+window.addEventListener("dragstart", preventNativeAssetAction, { capture: true });
+window.addEventListener("selectstart", preventTextSelection, { capture: true });
 window.addEventListener("pointerdown", markAudioGestureReady, { capture: true });
 window.addEventListener("touchstart", markAudioGestureReady, { capture: true });
 window.addEventListener("keydown", markAudioGestureReady, { capture: true });
